@@ -13,6 +13,7 @@ Distribution: WSS Linux
 Vendor: Corley S.r.l.
 Packager: Walter Dal Mut <walter.dalmut@corley.it>
 
+%define remote_app https://github.com/wdalmut/%{name}/archive/%{version}.tar.gz
 %define remote_pack https://github.com/wdalmut/%{name}/archive/%{version}.tar.gz
 
 %description
@@ -21,10 +22,12 @@ The daemon collects all metrics through UDP/IP socket
 and send data collected periodically to AWS CloudWatch
 
 %prep
-wget -O %{_sourcedir}/%{name}.tar.gz %{remote_pack}
+wget -O %{_sourcedir}/%{name}.tar.gz %{remote_app}
 rm -rf %{_builddir}/%{name}
 mkdir -p %{_builddir}/%{name}
 zcat %{_sourcedir}/%{name}.tar.gz | tar -xvf -
+
+git clone https://github.com/wdalmut/pack-cloudwatch-agent.git %{_builddir}/%{name}
 
 %build
 mv %{name}-%{version}/* %{name}/
@@ -36,11 +39,11 @@ mkdir -p %{buildroot}%{_sbindir}
 mkdir -p %{buildroot}%{_initrddir}
 mkdir -p %{buildroot}%{_sysconfdir}/default
 mkdir -p %{buildroot}%{_sysconfdir}/%{name}
-cp %{name}/%{name} %{buildroot}%{_sbindir}/
-cp %{name}/pack/scripts/cw-agent %{buildroot}%{_initrddir}/
+cp $GOPATH/src/github.com/wdalmut/%{name}/%{name} %{buildroot}%{_sbindir}/
+cp %{name}/scripts/cw-agent %{buildroot}%{_initrddir}/
 chmod a+x %{buildroot}/%{_initrddir}/cw-agent
-cp %{name}/pack/scripts/%{name}.default %{buildroot}%{_sysconfdir}/default/%{name}
-cp %{name}/pack/config/%{name}.conf %{buildroot}%{_sysconfdir}/%{name}/%{name}.conf
+cp %{name}/scripts/%{name}.default %{buildroot}%{_sysconfdir}/default/%{name}
+cp %{name}/config/%{name}.conf %{buildroot}%{_sysconfdir}/%{name}/%{name}.conf
 
 %files
 %doc %{name}/README.md
